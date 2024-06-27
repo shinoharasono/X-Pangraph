@@ -17,7 +17,6 @@ public class Main {
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
-                System.out.println(1);
                 try {
                     ProtractSave ps = new ProtractSave();
                     ps.setVisible(true);
