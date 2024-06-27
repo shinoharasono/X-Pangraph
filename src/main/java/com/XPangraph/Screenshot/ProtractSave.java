@@ -7,9 +7,7 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.filechooser.FileSystemView;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.RescaleOp;
 import java.io.File;
@@ -23,6 +21,7 @@ public class ProtractSave extends JWindow
     private BufferedImage tempImage=null;
     private BufferedImage saveImage=null;
     private ToolsWindow tools=null;
+    private  Point dragStartPoint;
     public ProtractSave() throws AWTException {
         //获取屏幕尺寸
         Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
@@ -30,6 +29,7 @@ public class ProtractSave extends JWindow
         //截取屏幕
         Robot robot = new Robot();
         image = robot.createScreenCapture(new Rectangle(0, 0, d.width,d.height));
+
         //为当前窗口添加鼠标事件监听器，监听鼠标按下和松开的事件。
         this.addMouseListener(new MouseAdapter() {
             @Override
@@ -58,8 +58,29 @@ public class ProtractSave extends JWindow
             @Override
             public void mouseDragged(MouseEvent e) {
                 //鼠标拖动时，记录坐标并重绘窗口
-                endx = e.getX();
-                endy = e.getY();
+                if (dragStartPoint != null) {
+                    int deltaX = e.getX() - dragStartPoint.x;
+                    int deltaY = e.getY() - dragStartPoint.y;
+
+                    dragStartPoint = e.getPoint();
+
+                    int newOrgX = orgx + deltaX;
+                    int newOrgY = orgy + deltaY;
+                    int newEndX = endx + deltaX;
+                    int newEndY = endy + deltaY;
+
+                    orgx = newOrgX;
+                    orgy = newOrgY;
+                    endx = newEndX;
+                    endy = newEndY;
+
+                    ProtractSave.this.repaint();
+                } else {
+                    endx = e.getX();
+                    endy = e.getY();
+                }
+
+
                 //临时图像，用于缓冲屏幕区域放置屏幕闪烁
                 Image tempImage2=createImage(ProtractSave.this.getWidth(), ProtractSave.this.getHeight());
                 Graphics g =tempImage2.getGraphics();
@@ -68,6 +89,7 @@ public class ProtractSave extends JWindow
                 int y = Math.min(orgy, endy);
                 int width = Math.abs(endx - orgx)+1;
                 int height = Math.abs(endy - orgy)+1;
+
                 // 加上1防止width或height0
                 g.setColor(Color.BLUE);
                 g.drawRect(x-1, y-1, width+1, height+1);
@@ -113,5 +135,3 @@ public class ProtractSave extends JWindow
         }
     }
 }
-
-
